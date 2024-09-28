@@ -1,0 +1,99 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Player
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- GUI Creation
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AntiCheatGUI"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 150)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = ScreenGui
+
+-- Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Text = "Anti-Cheat System"
+titleLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 20
+titleLabel.Parent = mainFrame
+
+-- Input for Target Player
+local targetInput = Instance.new("TextBox")
+targetInput.Size = UDim2.new(1, -20, 0, 40)
+targetInput.Position = UDim2.new(0, 10, 0, 60)
+targetInput.PlaceholderText = "Enter Player Name"
+targetInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+targetInput.TextColor3 = Color3.new(1, 1, 1)
+targetInput.Font = Enum.Font.SourceSans
+targetInput.TextSize = 18
+targetInput.Parent = mainFrame
+
+-- Spin Button
+local spinButton = Instance.new("TextButton")
+spinButton.Size = UDim2.new(1, -20, 0, 40)
+spinButton.Position = UDim2.new(0, 10, 0, 110)
+spinButton.Text = "Activate Spin"
+spinButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+spinButton.TextColor3 = Color3.new(1, 1, 1)
+spinButton.Font = Enum.Font.SourceSans
+spinButton.TextSize = 18
+spinButton.Parent = mainFrame
+
+-- Notification Label
+local notificationLabel = Instance.new("TextLabel")
+notificationLabel.Size = UDim2.new(1, 0, 0, 40)
+notificationLabel.Position = UDim2.new(0, 0, 0, 160)
+notificationLabel.Text = ""
+notificationLabel.TextColor3 = Color3.new(1, 0, 0)
+notificationLabel.BackgroundTransparency = 1
+notificationLabel.Font = Enum.Font.SourceSansBold
+notificationLabel.TextSize = 16
+notificationLabel.Parent = ScreenGui
+
+-- Spin and Knockback Function
+local function activateSpin()
+    local spinSpeed = 100
+    local targetName = targetInput.Text
+    local targetPlayer = Players:FindFirstChild(targetName)
+
+    if targetPlayer and targetPlayer.Character then
+        local function spinCharacter()
+            rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+
+            -- Check collision with target
+            if (rootPart.Position - targetPlayer.Character.HumanoidRootPart.Position).Magnitude < 5 then
+                -- Knockback Effect
+                local knockbackDirection = (targetPlayer.Character.HumanoidRootPart.Position - rootPart.Position).unit
+                targetPlayer.Character.HumanoidRootPart.Velocity = knockbackDirection * 100
+
+                -- Anti-cheat Notification
+                notificationLabel.Text = "Anti-Cheat Triggered: Spin/Knockback detected!"
+            end
+        end
+
+        -- Spin Continuously
+        RunService.Heartbeat:Connect(spinCharacter)
+    else
+        notificationLabel.Text = "Player not found!"
+    end
+end
+
+-- Button Click Event
+spinButton.MouseButton1Click:Connect(activateSpin)
+
+-- Enable GUI
+ScreenGui.Enabled = true
